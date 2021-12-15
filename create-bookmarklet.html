@@ -1,0 +1,87 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script id="stf">
+function sendToFinna() {
+  var table = document.getElementById('TABLE_DATA_marcFieldsList');
+  if (!table) {
+    alert('Unable to find the MARC table. Please make sure "Record View" with the MARC tab is visible.');
+    return false;
+  }
+  var recordData = [...table.rows].slice(1).map(t => [...t.children].slice(2).map(u => u.innerText)).map(u => u.join(" ")).join("\n");
+  var form = document.createElement('form');
+  form.action = "###finnaviewurl###/Record/0/Preview";
+  form.method = "POST";
+  form.target = "_blank";
+  var data = document.createElement('input');
+  data.type = "hidden";
+  data.name = "data";
+  data.value = recordData;
+  form.appendChild(data);
+  var format = document.createElement('input');
+  format.type = "hidden";
+  format.name = "format";
+  format.value = "marc";
+  form.appendChild(format);
+  var source = document.createElement('input');
+  source.type = "hidden";
+  source.name = "source";
+  source.value = "###finnasourceid###";
+  form.appendChild(source);
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+}
+</script>
+<script type="text/javascript">
+function createBookmarklet() {
+  var src = document.getElementById('stf').text;
+  lines = src.split(/[\n*\r*]/);
+  var cnt = lines.length;
+  var url = document.getElementById('finna_view').value;
+  var source = document.getElementById('finna_source').value;
+  for (var i = 0; i < cnt; i++) {
+    lines[i] = String(lines[i]).trim();//.replace(/\s*([\(\)\{\}\?\:]|&&|==|\!==|=)\s*/g, "$1");
+    lines[i] = lines[i].replace('###finnaviewurl###', url);
+    lines[i] = lines[i].replace('###finnasourceid###', source);
+  }
+  src = lines.join('');
+  var script = src + 'sendToFinna();'
+  document.getElementById('placeholder').setAttribute('href', 'javascript:' + encodeURIComponent(script));
+  document.getElementById('finna_view_link').textContent = url;
+  document.getElementById('finna_source_link').textContent = source;
+}
+</script>
+</head>
+<body>
+<h1>A bookmarklet for sending a MARC record to Finna</h1>
+<p>
+  Finna view address (without trailing slash):
+  <input id="finna_view" name="finna_view" type="text" value="https://www.finna.fi">
+</p>
+<p>
+  Finna data source id:
+  <input id="finna_source" name="finna_source" type="text" value="abo">
+</p>
+<p>
+  Add this link to bookmarks: <a id="placeholder">Send to Finna</a> (Finna view: <span id="finna_view_link"></span>, data source: <span id="finna_source_link"></span>).
+</p>
+<p>
+  By selecting the bookmark you can send the MARC record on screen to Finna for preview.
+  The function is easiest to use, when it's added to browser's bookmark toolbar that can be kept active at all times.
+</p>
+<p>
+  If you have the bookmark toolbar visible in the browser, you can simply drag the Send to Finna link to a desirable slot in it.
+</p>
+<p>
+  This bookmarklet has been tested with Firefox and Chrome.
+</p>
+</body>
+
+<script>
+   createBookmarklet();
+   document.getElementById('finna_view').addEventListener('change', createBookmarklet);
+   document.getElementById('finna_source').addEventListener('change', createBookmarklet);
+</script>
+
+</html>
